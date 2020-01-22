@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ToDoTableViewController : UITableViewController
-
+@property (nonatomic) NSMutableArray* todoTask;
 @end
 
 NS_ASSUME_NONNULL_END

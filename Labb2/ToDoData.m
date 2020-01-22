@@ -11,7 +11,12 @@
 @implementation ToDoData
 
 - (instancetype) initWithDate:(NSString *)date andTask:(NSString *)task{
-    self = [self initWithDate:date andTask:task];
+    self = [super init];
+    
+    if(self){
+        self.date = date;
+        self.task = task;
+    }
     return self;
 }
 

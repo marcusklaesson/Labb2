@@ -7,9 +7,10 @@
 //
 
 #import "ToDoTableViewController.h"
+#import "ToDoData.h"
 
 @interface ToDoTableViewController ()
-
+@property (nonatomic) NSMutableArray* todoTask;
 @end
 
 @implementation ToDoTableViewController
@@ -17,12 +18,125 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
+    self.todoTask = [[NSMutableArray alloc] init];
+
+    UILongPressGestureRecognizer* longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(onLongPress:)];
+    [self.tableView addGestureRecognizer:longPressRecognizer];
     
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    
+    
 }
+- (IBAction)addTodo:(id)sender {
+    
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Your task" message:@"" preferredStyle: UIAlertControllerStyleAlert];
+    
+    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+        
+        UITextField *textField = alert.textFields[0];
+        
+        if(textField.text.length > 0){
+            
+            NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+            [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
+            // or @"yyyy-MM-dd hh:mm:ss a" if you prefer the time with AM/P
+            
+            ToDoData *todo = [[ToDoData alloc] initWithDate:[dateFormatter stringFromDate:[NSDate date]] andTask:textField.text];
+            [self.todoTask addObject:todo];
+            
+            NSLog(@"%lu", (unsigned long)self.todoTask.count);
+            
+            [self.tableView reloadData];
+            
+        }
+
+    }];
+    
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+        [alert dismissViewControllerAnimated:YES completion:nil];
+    }];
+    
+    [alert addAction:defaultAction];
+                                   
+                                   [alert addAction:cancelAction];
+    
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+        textField.placeholder = @"Task";
+        textField.keyboardType = UIKeyboardTypeDefault;
+    }];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+    
+}
+
+-(void)onLongPress:(UILongPressGestureRecognizer*)pGesture
+{
+if (pGesture.state == UIGestureRecognizerStateRecognized)
+{
+    NSLog(@"Klick");
+}
+if (pGesture.state == UIGestureRecognizerStateEnded)
+{
+    UITableView* tableView = (UITableView*)self.view;
+    CGPoint touchPoint = [pGesture locationInView:self.view];
+    NSIndexPath* selectedCell = [tableView indexPathForRowAtPoint:touchPoint];
+    if (selectedCell != nil) {
+        
+        UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Task options" message:@"" preferredStyle: UIAlertControllerStyleAlert];
+        
+        UIAlertAction *prioAction = [UIAlertAction actionWithTitle:@"Prioritize" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            
+            ToDoData *d = self.todoTask[selectedCell.row];
+            [self.todoTask removeObjectAtIndex:selectedCell.row];
+            [self.todoTask insertObject:d atIndex:0];
+            [self.tableView reloadData];
+            
+        }];
+        
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Task done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            NSLog(@"Task done");
+            
+            [self.todoTask removeObjectAtIndex:selectedCell.row];
+            [self.tableView reloadData];
+            
+        }];
+        
+        UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            NSLog(@"Task done");
+            
+            /*UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+                NSLog(@"Task done");
+                
+                [self.todoTasks removeObjectAtIndex:selectedCell.row];
+                [self.tableView reloadData];
+                
+            }];
+            
+            UIAlertAction *noAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+                NSLog(@"Task done");
+                
+                [self.todoTasks removeObjectAtIndex:selectedCell.row];
+                [self.tableView reloadData];
+                
+            }];
+            
+            [alert addAction:okAction];
+            [alert addAction:noAction];
+            */
+        }];
+        
+        [alert addAction:prioAction];
+                                       
+        [alert addAction:cancelAction];
+        
+        [alert addAction:deleteAction];
+        
+        
+        [self presentViewController:alert animated:YES completion:nil];
+        
+    }
+}
+}
+
 
 #pragma mark - Table view data source
 
@@ -33,14 +147,19 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 
-    return 5;
+    return self.todoTask.count;
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"todoCell" forIndexPath:indexPath];
     
-    cell.textLabel.text = @"21/2-20";
+     ToDoData *data = self.todoTask[indexPath.row];
+       
+       
+       cell.textLabel.text = [NSString stringWithFormat:@"%@", data.task];
+       
+       cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", data.date];
     
     return cell;
 }
