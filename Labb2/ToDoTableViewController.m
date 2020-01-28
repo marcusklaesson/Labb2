@@ -7,10 +7,11 @@
 //
 
 #import "ToDoTableViewController.h"
-#import "ToDoData.h"
+
 
 @interface ToDoTableViewController ()
-@property (nonatomic) NSMutableArray* todoTask;
+@property (nonatomic) NSMutableArray *todoTask;
+@property (nonatomic) int selectedRow;
 @end
 
 @implementation ToDoTableViewController
@@ -18,13 +19,40 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    
     self.todoTask = [[NSMutableArray alloc] init];
-
+   
+   
+    [self loadData];
+    
+    
+    
+    
     UILongPressGestureRecognizer* longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(onLongPress:)];
     [self.tableView addGestureRecognizer:longPressRecognizer];
     
     
     
+}
+
+-(void)saveData{
+    
+    [[NSUserDefaults standardUserDefaults] setObject:self.todoTask forKey:@"TheKey"];
+      [[NSUserDefaults standardUserDefaults] synchronize];
+      
+      NSLog(@"SAVE: %@", self.todoTask);
+    
+
+
+}
+-(void)loadData{
+    
+    self.todoTask = [[[NSUserDefaults standardUserDefaults] objectForKey:@"TheKey"] mutableCopy];
+
+       NSLog(@"LOAD: %@", self.todoTask);
+    
+
+        
 }
 - (IBAction)addTodo:(id)sender {
     
@@ -36,17 +64,17 @@
         
         if(textField.text.length > 0){
             
-            NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
-            [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
-            // or @"yyyy-MM-dd hh:mm:ss a" if you prefer the time with AM/P
             
-            ToDoData *todo = [[ToDoData alloc] initWithDate:[dateFormatter stringFromDate:[NSDate date]] andTask:textField.text];
+            NSMutableString *todo = [NSMutableString stringWithFormat:@"%@", textField.text];
+            
+            
             [self.todoTask addObject:todo];
             
-            NSLog(@"%lu", (unsigned long)self.todoTask.count);
+            
+            NSLog(@"todo clicks: %lu", (unsigned long)self.todoTask.count);
             
             [self.tableView reloadData];
-            
+            [self saveData];
         }
 
     }];
@@ -68,60 +96,62 @@
     
 }
 
--(void)onLongPress:(UILongPressGestureRecognizer*)pGesture
-{
-if (pGesture.state == UIGestureRecognizerStateRecognized)
-{
-    NSLog(@"Klick");
-}
+-(void)onLongPress:(UILongPressGestureRecognizer*)pGesture {
+
 if (pGesture.state == UIGestureRecognizerStateEnded)
 {
     UITableView* tableView = (UITableView*)self.view;
     CGPoint touchPoint = [pGesture locationInView:self.view];
     NSIndexPath* selectedCell = [tableView indexPathForRowAtPoint:touchPoint];
+    
+    
     if (selectedCell != nil) {
         
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Task options" message:@"" preferredStyle: UIAlertControllerStyleAlert];
         
         UIAlertAction *prioAction = [UIAlertAction actionWithTitle:@"Prioritize" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
             
-            ToDoData *d = self.todoTask[selectedCell.row];
+            NSMutableString *d = self.todoTask[selectedCell.row];
+            
+        
             [self.todoTask removeObjectAtIndex:selectedCell.row];
             [self.todoTask insertObject:d atIndex:0];
-            [self.tableView reloadData];
+            [tableView reloadData];
+            [self saveData];
             
+
         }];
         
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Task done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
+            
+            
+            
+            NSMutableString *d = self.todoTask[selectedCell.row];
+                              
+                     [self.todoTask removeObjectAtIndex:selectedCell.row];
+                     [self.todoTask insertObject:d atIndex:self.todoTask.count];
+                    
+                     [tableView reloadData];
+            
+            
             NSLog(@"Task done");
             
-            [self.todoTask removeObjectAtIndex:selectedCell.row];
-            [self.tableView reloadData];
+            [self saveData];
             
         }];
         
         UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
             NSLog(@"Task done");
             
-            /*UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                NSLog(@"Task done");
-                
-                [self.todoTasks removeObjectAtIndex:selectedCell.row];
-                [self.tableView reloadData];
-                
-            }];
+            if(selectedCell.row == UITableViewCellAccessoryCheckmark){
+                [tableView cellForRowAtIndexPath:selectedCell].accessoryType = UITableViewCellAccessoryNone;
+            }
             
-            UIAlertAction *noAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-                NSLog(@"Task done");
-                
-                [self.todoTasks removeObjectAtIndex:selectedCell.row];
-                [self.tableView reloadData];
-                
-            }];
+            [self.todoTask removeObjectAtIndex:selectedCell.row];
+            [self.tableView reloadData];
+            [self saveData];
             
-            [alert addAction:okAction];
-            [alert addAction:noAction];
-            */
+        
         }];
         
         [alert addAction:prioAction];
@@ -147,19 +177,27 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 
+   
     return self.todoTask.count;
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"todoCell" forIndexPath:indexPath];
     
-     ToDoData *data = self.todoTask[indexPath.row];
+
+    
+        NSMutableArray *todos = self.todoTask[indexPath.row];
        
+       cell.textLabel.text = [NSString stringWithFormat:@"%@", todos];
+    
        
-       cell.textLabel.text = [NSString stringWithFormat:@"%@", data.task];
-       
-       cell.detailTextLabel.text = [NSString stringWithFormat:@"%@", data.date];
+       NSLog(@"%@", todos);
+    
+
+    
+
     
     return cell;
 }
