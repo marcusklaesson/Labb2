@@ -43,6 +43,7 @@
       NSLog(@"SAVE: %@", self.todoTask);
     
 
+    
 
 }
 -(void)loadData{
@@ -51,7 +52,6 @@
 
        NSLog(@"LOAD: %@", self.todoTask);
     
-
         
 }
 - (IBAction)addTodo:(id)sender {
@@ -69,6 +69,8 @@
             
             
             [self.todoTask addObject:todo];
+            
+            
             
             
             NSLog(@"todo clicks: %lu", (unsigned long)self.todoTask.count);
@@ -111,11 +113,12 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
         
         UIAlertAction *prioAction = [UIAlertAction actionWithTitle:@"Prioritize" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
             
-            NSMutableString *d = self.todoTask[selectedCell.row];
+            NSMutableString *todo = self.todoTask[selectedCell.row];
+        
             
         
             [self.todoTask removeObjectAtIndex:selectedCell.row];
-            [self.todoTask insertObject:d atIndex:0];
+            [self.todoTask insertObject:todo atIndex:0];
             [tableView reloadData];
             [self saveData];
             
@@ -186,7 +189,12 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
 
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"todoCell" forIndexPath:indexPath];
     
-
+    NSMutableArray *picForPrio = self.todoTask[indexPath.row];
+    
+    cell.detailTextLabel.text = @"❗️";
+    
+    NSLog(@"%@", picForPrio);
+    
     
         NSMutableArray *todos = self.todoTask[indexPath.row];
        
