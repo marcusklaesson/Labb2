@@ -36,14 +36,6 @@
 
 -(void)saveData{
     
-   /* for (int i = 0; i < self.completedTask.count; i++) {
-        NSString *key = [NSString stringWithFormat:@"%d", ((void)(@"completed %d"), i)]
-        [[[[NSUserDefaults standardUserDefaults] setObject:self.completedTask[i] forKey:((void)(@"completed %d"), i)] ] ];
-                     [[NSUserDefaults standardUserDefaults] synchronize];
-                     
-                     NSLog(@"SAVE TO COMPLETED: %@", self.completedTask);
-    }*/
-    
         [[NSUserDefaults standardUserDefaults] setObject:self.completedTask forKey:@"completed"];
                [[NSUserDefaults standardUserDefaults] synchronize];
                
@@ -58,16 +50,15 @@
             [[NSUserDefaults standardUserDefaults] synchronize];
             
             NSLog(@"SAVE TO TODO: %@", self.todoTask);
-    
-    
+
 }
 -(void)loadData{
     
         self.completedTask = [[[NSUserDefaults standardUserDefaults] objectForKey:@"completed"] mutableCopy];
 
            NSLog(@"LOAD: %@", self.completedTask);
-        
-   
+    
+    
         self.todoTask = [[[NSUserDefaults standardUserDefaults] objectForKey:@"important"] mutableCopy];
 
            NSLog(@"LOAD: %@", self.importantTask);
@@ -106,7 +97,7 @@
     
     [alert addAction:defaultAction];
                                    
-                                   [alert addAction:cancelAction];
+    [alert addAction:cancelAction];
     
     [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
         textField.placeholder = @"Task";
@@ -129,59 +120,35 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"Task options" message:@"" preferredStyle: UIAlertControllerStyleAlert];
         
         UIAlertAction *prioAction = [UIAlertAction actionWithTitle:@"Prioritize" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-            
-            
-            NSString *string = self.todoTask[selectedCell.row];
+        
+  
+             NSMutableString *string = self.todoTask[selectedCell.row];
             
             
             [self.todoTask removeObjectAtIndex:selectedCell.row];
-            [self.importantTask addObject:string];
+                [self.importantTask addObject:string];
             
-            
-        
-            [self.tableView reloadData];
             [self saveData];
-
+            [self.tableView reloadData];
+        
         }];
         
         UIAlertAction *doneAction = [UIAlertAction actionWithTitle:@"Task done" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-           
+    
             
+            NSMutableString *string = self.todoTask[selectedCell.row];
             
-           // NSString *string = [NSString stringWithFormat:@"%ld", (long)selectedCell.row];
-           
-            NSString *string = self.todoTask[selectedCell.row];
-            NSString *string1 = self.importantTask[selectedCell.row];
-                //[self.todoTask removeObjectAtIndex:selectedCell.row];
-              //  [self.completedTask addObject:string];
+            [self.todoTask removeObjectAtIndex:selectedCell.row];
+                   [self.completedTask addObject:string];
             
-           
-            
-            NSLog(@"SELECTED THE CELL? %d", (long)selectedCell.section == 0);
-            
-            if(selectedCell.section == 0){
-               [self.importantTask removeObjectAtIndex:selectedCell.row];
-                [self.completedTask addObject:string1];
-            }else if(selectedCell.section == 1){
-               [self.todoTask removeObjectAtIndex:selectedCell.row];
-                [self.completedTask addObject:string];
-            }else if(selectedCell.section == 2){
-               [self.completedTask removeObjectAtIndex:selectedCell.row];
-                
-            }
-           
-        
-            NSLog(@"Task done");
-            
-            [self.tableView reloadData];
             [self saveData];
+            [self.tableView reloadData];
+            
             
         }];
         
         UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
-            
-            
-            
+    
             if(selectedCell.section == 0){
                 [self.importantTask removeObjectAtIndex:selectedCell.row];
             }else if(selectedCell.section == 1){
@@ -190,9 +157,9 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
                 [self.completedTask removeObjectAtIndex:selectedCell.row];
             }
             
-            [self.tableView reloadData];
             [self saveData];
-            
+            [self.tableView reloadData];
+        
         }];
         
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action){
@@ -222,7 +189,6 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    
     if (section == 0) {
         return self.importantTask.count;
     }
@@ -247,8 +213,6 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
           cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"todoCell"];
       }
     
-    
-
     if(indexPath.section == 0){
         
          NSMutableString *prio = [[NSMutableString alloc]initWithString:self.importantTask[indexPath.row]];
@@ -256,7 +220,6 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
         cell.textLabel.text = [NSString stringWithString:prio];
         
            NSLog(@"cellForRowIMPORTANT: %@", self.importantTask);
-        
         
     } if(indexPath.section == 1){
     
@@ -304,49 +267,5 @@ if (pGesture.state == UIGestureRecognizerStateEnded)
         return 50;
     }
 }
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

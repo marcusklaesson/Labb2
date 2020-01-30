@@ -10,7 +10,7 @@
             uuid = "3C14113B-FB7B-4DEF-AF88-6A74E8BC6C1B"
             shouldBeEnabled = "No"
             ignoreCount = "0"
-            condition = "[self.importantTask addObject:self.todoTask[selectedCell.row]];"
+            condition = " NSMutableString *string = [[NSMutableString alloc]initWithString:self.todoTask[selectedCell.row]];"
             continueAfterRunningActions = "No"
             scope = "1"
             stopOnStyle = "0">
